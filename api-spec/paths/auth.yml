@@ -1,0 +1,95 @@
+register:
+  post:
+    summary: Register a new user
+    description: Create a new user account with username and password
+    tags:
+      - Authentication
+    isSecure: false
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/RegisterRequest'
+          example:
+            username: "john_doe"
+            password: "securePassword123"
+    responses:
+      '201':
+        description: User successfully registered
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Token'
+            example:
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxfQ.abc123"
+      '400':
+        description: Bad request - validation error
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Error'
+            example:
+              error: "Username already exists"
+
+login:
+  post:
+    summary: Login user
+    description: Authenticate user with username and password
+    tags:
+      - Authentication
+    isSecure: false
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/LoginRequest'
+          example:
+            username: "john_doe"
+            password: "securePassword123"
+    responses:
+      '200':
+        description: User successfully authenticated
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Token'
+            example:
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxfQ.abc123"
+      '401':
+        description: Unauthorized - invalid credentials
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Error'
+            example:
+              error: "Invalid username or password"
+
+me:
+  get:
+    summary: Get current user
+    description: Retrieve information about the currently authenticated user
+    tags:
+      - Authentication
+    isSecure: true
+    security:
+      - BearerAuth: []
+    responses:
+      '200':
+        description: Current user information
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/User'
+            example:
+              id: 1
+              username: "john_doe"
+      '401':
+        description: Unauthorized - invalid or missing token
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Error'
+            example:
+              error: "Authentication credentials were not provided"
