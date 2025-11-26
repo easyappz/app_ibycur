@@ -10,8 +10,8 @@ class MessageSerializer(serializers.Serializer):
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
-        fields = ['id', 'username', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = ['id', 'username']
+        read_only_fields = ['id']
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -21,6 +21,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['username', 'password']
 
+    def validate_username(self, value):
+        if len(value) < 3:
+            raise serializers.ValidationError("Username must be at least 3 characters long")
+        if Member.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Username already exists")
+        return value
+
     def create(self, validated_data):
         member = Member(
             username=validated_data['username']
@@ -28,3 +35,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         member.set_password(validated_data['password'])
         member.save()
         return member
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+
+class TokenSerializer(serializers.Serializer):
+    token = serializers.CharField()
