@@ -10,9 +10,11 @@ from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     TokenSerializer,
-    MemberSerializer
+    MemberSerializer,
+    ChatMessageSerializer,
+    CreateMessageSerializer
 )
-from .models import Member
+from .models import Member, Message
 
 
 class HelloView(APIView):
@@ -112,3 +114,53 @@ class MeView(APIView):
     def get(self, request):
         serializer = MemberSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class MessagesListView(APIView):
+    """
+    Get all chat messages.
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: {"type": "object", "properties": {"messages": {"type": "array", "items": ChatMessageSerializer}}},
+            401: {"type": "object", "properties": {"error": {"type": "string"}}}
+        },
+        description="Retrieve all chat messages with user information and timestamps"
+    )
+    def get(self, request):
+        messages = Message.objects.select_related('member').all().order_by('created_at')
+        serializer = ChatMessageSerializer(messages, many=True)
+        return Response({"messages": serializer.data}, status=status.HTTP_200_OK)
+
+
+class MessageCreateView(APIView):
+    """
+    Create a new chat message.
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=CreateMessageSerializer,
+        responses={
+            201: ChatMessageSerializer,
+            400: {"type": "object", "properties": {"error": {"type": "string"}}},
+            401: {"type": "object", "properties": {"error": {"type": "string"}}}
+        },
+        description="Create and send a new chat message"
+    )
+    def post(self, request):
+        serializer = CreateMessageSerializer(data=request.data)
+        if serializer.is_valid():
+            message = serializer.save(member=request.user)
+            response_serializer = ChatMessageSerializer(message)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        
+        error_message = "Text field is required"
+        if 'text' in serializer.errors:
+            error_message = serializer.errors['text'][0]
+        else:
+            error_message = str(serializer.errors)
+        
+        return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)

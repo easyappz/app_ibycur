@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Member
+from api.models import Member, Message
 
 
 class MessageSerializer(serializers.Serializer):
@@ -44,3 +44,25 @@ class LoginSerializer(serializers.Serializer):
 
 class TokenSerializer(serializers.Serializer):
     token = serializers.CharField()
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='member.username', read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ['id', 'username', 'text', 'created_at']
+        read_only_fields = ['id', 'username', 'created_at']
+
+
+class CreateMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ['text']
+
+    def validate_text(self, value):
+        if not value or len(value.strip()) == 0:
+            raise serializers.ValidationError("Text field is required")
+        if len(value) > 1000:
+            raise serializers.ValidationError("Text must not exceed 1000 characters")
+        return value
