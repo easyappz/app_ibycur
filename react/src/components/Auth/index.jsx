@@ -38,6 +38,7 @@ const Auth = () => {
 
       if (response.token) {
         localStorage.setItem('token', response.token);
+        localStorage.setItem('username', username);
         navigate('/chat');
       }
     } catch (err) {

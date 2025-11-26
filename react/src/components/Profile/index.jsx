@@ -10,17 +10,24 @@ const Profile = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/');
+      return;
+    }
+
     const fetchUser = async () => {
       try {
         const userData = await getMe();
         setUser(userData);
+        localStorage.setItem('username', userData.username);
         setLoading(false);
       } catch (err) {
         setError(err.message || 'Ошибка загрузки данных');
         setLoading(false);
-        // If unauthorized, redirect to auth
         if (err.response && err.response.status === 401) {
           localStorage.removeItem('token');
+          localStorage.removeItem('username');
           navigate('/');
         }
       }
@@ -31,6 +38,7 @@ const Profile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('username');
     navigate('/');
   };
 
@@ -69,18 +77,13 @@ const Profile = () => {
         {user && (
           <div className="profile-info">
             <div className="profile-field">
+              <span className="profile-label">ID:</span>
+              <span className="profile-value">{user.id}</span>
+            </div>
+            <div className="profile-field">
               <span className="profile-label">Имя пользователя:</span>
               <span className="profile-value">{user.username}</span>
             </div>
-            
-            {user.date_joined && (
-              <div className="profile-field">
-                <span className="profile-label">Дата регистрации:</span>
-                <span className="profile-value">
-                  {new Date(user.date_joined).toLocaleDateString('ru-RU')}
-                </span>
-              </div>
-            )}
           </div>
         )}
 
