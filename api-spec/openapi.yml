@@ -15,6 +15,11 @@ paths:
     $ref: './paths/auth.yml#/login'
   /api/auth/me:
     $ref: './paths/auth.yml#/me'
+  /api/messages:
+    get:
+      $ref: './paths/messages.yml#/getMessages'
+    post:
+      $ref: './paths/messages.yml#/createMessage'
 
 components:
   securitySchemes:
@@ -83,3 +88,36 @@ components:
       required:
         - username
         - password
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Message ID
+        username:
+          type: string
+          description: Username of the message sender
+        text:
+          type: string
+          description: Message text content
+        created_at:
+          type: string
+          format: date-time
+          description: Message creation timestamp
+      required:
+        - id
+        - username
+        - text
+        - created_at
+
+    CreateMessageRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Message text content
+      required:
+        - text

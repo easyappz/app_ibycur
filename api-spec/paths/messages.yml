@@ -1,0 +1,87 @@
+getMessages:
+  get:
+    summary: Get message history
+    description: Retrieve all chat messages with user information and timestamps
+    tags:
+      - Messages
+    isSecure: true
+    security:
+      - BearerAuth: []
+    responses:
+      '200':
+        description: List of messages successfully retrieved
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messages:
+                  type: array
+                  items:
+                    $ref: '../openapi.yml#/components/schemas/Message'
+              required:
+                - messages
+            example:
+              messages:
+                - id: 1
+                  username: "john_doe"
+                  text: "Hello, everyone!"
+                  created_at: "2024-01-15T10:30:00Z"
+                - id: 2
+                  username: "jane_smith"
+                  text: "Hi there!"
+                  created_at: "2024-01-15T10:31:00Z"
+      '401':
+        description: Unauthorized - invalid or missing token
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Error'
+            example:
+              error: "Authentication credentials were not provided"
+
+createMessage:
+  post:
+    summary: Send a message
+    description: Create and send a new chat message
+    tags:
+      - Messages
+    isSecure: true
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yml#/components/schemas/CreateMessageRequest'
+          example:
+            text: "This is my message"
+    responses:
+      '201':
+        description: Message successfully created
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Message'
+            example:
+              id: 3
+              username: "john_doe"
+              text: "This is my message"
+              created_at: "2024-01-15T10:32:00Z"
+      '400':
+        description: Bad request - validation error
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Error'
+            example:
+              error: "Text field is required"
+      '401':
+        description: Unauthorized - invalid or missing token
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yml#/components/schemas/Error'
+            example:
+              error: "Authentication credentials were not provided"
